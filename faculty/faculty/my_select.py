@@ -87,6 +87,27 @@ def select_10():
     return query
 
 
+def select_11():
+    """Find average mark that a teacher gives a student"""
+    query = session.query(
+        Student.student_name, func.round(func.avg(Mark.mark_value), 0).label("average_mark"), Teacher.teacher_name)\
+        .select_from(Student).join(Mark).join(Subject).join(Teacher).where(Teacher.id == 1).where(Student.id == 1)\
+        .group_by(Student.student_name, Teacher.teacher_name).all()
+    return query
+
+
+def select_12():
+    """Find the recent students marks (from the last lesson) in a group from a subject"""
+    subquery = session.query(
+        func.max(Mark.mark_date)).select_from(Mark).join(Student).join(Subject).join(Group)\
+        .where(Group.id == 1).where(Subject.id == 1).scalar_subquery()
+    query = session.query(
+        Student.student_name, Group.group_name, Mark.mark_value, Mark.mark_date, Subject.subject_name)\
+        .select_from(Student).join(Group).join(Mark).join(Subject).where(Group.id == 1).where(Subject.id == 1)\
+        .where(Mark.mark_date == subquery).all()
+    return query
+
+
 if __name__ == "__main__":
     print(select_1())
     print(select_2())
@@ -98,3 +119,5 @@ if __name__ == "__main__":
     print(select_8())
     print(select_9())
     print(select_10())
+    print(select_11())
+    print(select_12())
